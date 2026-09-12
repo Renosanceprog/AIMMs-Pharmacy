@@ -5,28 +5,28 @@
 ```jsx
 data/
 ├── accounts/
-│   ├── adminDB.csv              ✅ documented
-│   ├── doctorDB.csv             ✅ documented
-│   ├── pharmacistDB.csv         ✅ documented
-│   └── customerDB.csv           ✅ documented
-│
+│   ├── adminDB.csv
+│   ├── doctorDB.csv
+│   ├── pharmacistDB.csv
+│   └── customerDB.csv
 ├── inventory/
-│   ├── itemsDB.csv              ✅ documented
-│   └── batchDB.csv              ✅ documented
-│
+│   ├── itemsDB.csv
+│   └── batchDB.csv
 ├── prescriptions/
-│   ├── prescriptionsDB.csv      ✅ documented
-│   └── prescriptionItemsDB.csv  ✅ documented
-│
+│   ├── prescriptionsDB.csv
+│   └── prescriptionItemsDB.csv
+├── transactions/
+│   ├── transactionsDB.csv
+│   └── transactionItemsDB.csv
 └── logs/
-    ├── inventoryLogs.csv        ✅ documented
-    ├── prescLogs.csv            ✅ documented
-    ├── batchLogs.csv            ✅ documented
-    ├── transactionLogs.csv      ✅ documented
-    └── balanceLogs.csv          ✅ documented
+    ├── inventoryLogs.csv
+    ├── prescriptionLogs.csv
+    ├── batchLogs.csv
+    ├── transactionLogs.csv
+    └── balanceLogs.csv
 ```
 
-**All 13 schemas are now fully documented.** 🎉
+**All 15 schemas are now fully documented.** 🎉
 
 Decided **not** to build:
 
@@ -345,9 +345,50 @@ If any prescribed item can't be fully fulfilled due to insufficient valid invent
 
 ---
 
+## 9. transactionsDB.csv
+
+**Schema:** `transactionID,customerID,pharmacistID,totalAmount,status,dateTime`
+
+| Field | Description |
+| --- | --- |
+| `transactionID` | Unique ID for the transaction |
+| `customerID` | Customer who made the transaction |
+| `pharmacistID` | Pharmacist who processed the transaction |
+| `totalAmount` | Total cost of the transaction |
+| `status` | Current status of the transaction |
+| `dateTime` | When the transaction was completed or cancelled |
+
+**Enum `status`:** `COMPLETED`, `CANCELLED`
+
+- **`COMPLETED`** — Transaction was successfully processed
+- **`CANCELLED`** — Transaction was voided before completion
+
+> The individual purchased items are stored in `transactionItemsDB.csv`, linked through `transactionID`. This DB stores the transaction-level information.
+
+---
+
+## 10. transactionItemsDB.csv
+
+**Schema:** `transactionItemID,transactionID,itemID,quantity,unitPrice,subtotal`
+
+| Field | Description |
+| --- | --- |
+| `transactionItemID` | Unique ID for this transaction item |
+| `transactionID` | Transaction this item belongs to |
+| `itemID` | Product purchased |
+| `quantity` | Number of units purchased |
+| `unitPrice` | Item price at the time of purchase |
+| `subtotal` | Total cost for this item (`quantity × unitPrice`) |
+
+> Each row represents one item within a transaction. Multiple rows can share the same `transactionID`, allowing a transaction to contain multiple products.
+>
+> `unitPrice` is stored as a historical snapshot so later changes to `itemsDB.csv` do not alter previous transaction records.
+
+---
+
 # Logs
 
-## 9. inventoryLogs.csv
+## 11. inventoryLogs.csv
 
 **Schema:** `logID,batchID,itemID,actorID,actorRole,action,quantity,dateTime,details`
 
@@ -375,25 +416,42 @@ LOG-003,BAT-001,ITM-001,ADM-001,ADMIN,ADJUSTMENT,-2,2026-09-11 15:00,Corrected i
 
 ---
 
-## 10. prescLogs.csv
+## 12. prescriptionLogs.csv
 
 **Schema:** `logID,prescriptionID,actorID,actorRole,action,dateTime,details`
 
 | Field | Description |
 | --- | --- |
 | `logID` | Unique ID for this prescription event |
-| `prescriptionID` | The prescription this event belongs to |
-| `actorID` | ID of the person/system that caused the change |
+| `prescriptionID` | Prescription affected by the action |
+| `actorID` | Person/system that performed the action |
 | `actorRole` | Role of the actor |
 | `action` | What happened to the prescription |
-| `dateTime` | When the event happened |
+| `dateTime` | When it happened |
 | `details` | Optional human-readable explanation |
 
-Tracks prescription lifecycle events (e.g. request submitted, approved, rejected, dispensed, cancelled) — the audit trail behind the `status` transitions in `prescriptionsDB.csv`.
+**Enum `action`:** `REQUEST`, `EDIT`, `APPROVE`, `REJECT`, `EXPIRE`, `DISPENSE`, `CANCEL`
+
+- **`REQUEST`** — Customer submits a prescription request
+- **`EDIT`** — Doctor modifies the requested prescription items or quantities
+- **`APPROVE`** — Doctor approves the prescription
+- **`REJECT`** — Doctor rejects the prescription
+- **`EXPIRE`** — Prescription reaches its validity date. `actorID`/`actorRole` can be `SYSTEM`
+- **`DISPENSE`** — Prescription is successfully fulfilled through a completed transaction
+- **`CANCEL`** — Prescription is cancelled before fulfillment
+
+**Examples:**
+
+```text
+LOG-001,RX-001,CUS-001,CUSTOMER,REQUEST,2026-09-11 09:00,Requested prescription for prescribed items
+LOG-002,RX-001,DOC-001,DOCTOR,EDIT,2026-09-11 10:00,Adjusted prescribed quantity
+LOG-003,RX-001,DOC-001,DOCTOR,APPROVE,2026-09-11 10:05,Prescription approved until 2026-10-11
+LOG-004,RX-001,CUS-001,CUSTOMER,DISPENSE,2026-09-12 14:30,Prescription fulfilled through transaction TXN-001
+```
 
 ---
 
-## 11. batchLogs.csv
+## 13. batchLogs.csv
 
 **Schema:** `logID,batchID,itemID,actorID,actorRole,action,dateTime,details`
 
@@ -429,7 +487,7 @@ LOG-004,BAT-001,ITM-001,SYSTEM,SYSTEM,EXPIRE,2026-10-01 00:00,Batch reached expi
 
 ---
 
-## 12. transactionLogs.csv
+## 14. transactionLogs.csv
 
 **Schema:** `logID,transactionID,customerID,actorID,actorRole,action,dateTime,details`
 
@@ -462,7 +520,7 @@ LOG-003,TXN-003,CUS-003,PHA-002,PHARMACIST,CANCELLED,2026-09-11 16:20,Insufficie
 
 ---
 
-## 13. balanceLogs.csv
+## 15. balanceLogs.csv
 
 **Schema:** `logID,customerID,actorID,actorRole,action,amount,balanceBefore,balanceAfter,dateTime,details`
 
