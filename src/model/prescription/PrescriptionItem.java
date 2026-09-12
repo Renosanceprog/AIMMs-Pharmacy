@@ -1,4 +1,4 @@
-package model;
+package model.prescription;
 
 public class PrescriptionItem {
 

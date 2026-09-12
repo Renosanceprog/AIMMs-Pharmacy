@@ -1,4 +1,4 @@
-package model;
+package model.prescription;
 
 import java.time.LocalDate;
 

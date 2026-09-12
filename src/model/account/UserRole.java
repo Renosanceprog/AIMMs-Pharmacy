@@ -1,4 +1,4 @@
-package model;
+package model.account;
 
 public enum UserRole {
     ADMIN,

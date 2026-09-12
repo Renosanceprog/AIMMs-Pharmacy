@@ -1,14 +1,14 @@
-package model;
+package model.account;
 
 import java.time.LocalDate;
 
-public class Pharmacist extends User {
+public class Doctor extends User {
 
     private final StaffStatus status;
     private final LocalDate dateRegistered;
     private final LocalDate dateApproved;
 
-    public Pharmacist(
+    public Doctor(
             String userID,
             String username,
             String password,
@@ -36,6 +36,6 @@ public class Pharmacist extends User {
 
     @Override
     public UserRole getRole() {
-        return UserRole.PHARMACIST;
+        return UserRole.DOCTOR;
     }
 }

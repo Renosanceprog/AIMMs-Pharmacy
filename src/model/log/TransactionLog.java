@@ -1,27 +1,30 @@
-package model;
+package model.log;
 
 import java.time.LocalDateTime;
 
-public class PrescriptionLog {
+public class TransactionLog {
 
     private final String logID;
-    private final String prescriptionID;
+    private final String transactionID;
+    private final String customerID;
     private final String actorID;
     private final String actorRole;
-    private final PrescriptionLogAction action;
+    private final TransactionLogAction action;
     private final LocalDateTime dateTime;
     private final String details;
 
-    public PrescriptionLog(
+    public TransactionLog(
             String logID,
-            String prescriptionID,
+            String transactionID,
+            String customerID,
             String actorID,
             String actorRole,
-            PrescriptionLogAction action,
+            TransactionLogAction action,
             LocalDateTime dateTime,
             String details) {
         this.logID = logID;
-        this.prescriptionID = prescriptionID;
+        this.transactionID = transactionID;
+        this.customerID = customerID;
         this.actorID = actorID;
         this.actorRole = actorRole;
         this.action = action;
@@ -33,8 +36,12 @@ public class PrescriptionLog {
         return logID;
     }
 
-    public String getPrescriptionID() {
-        return prescriptionID;
+    public String getTransactionID() {
+        return transactionID;
+    }
+
+    public String getCustomerID() {
+        return customerID;
     }
 
     public String getActorID() {
@@ -45,7 +52,7 @@ public class PrescriptionLog {
         return actorRole;
     }
 
-    public PrescriptionLogAction getAction() {
+    public TransactionLogAction getAction() {
         return action;
     }
 

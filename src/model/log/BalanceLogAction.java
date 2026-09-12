@@ -1,4 +1,4 @@
-package model;
+package model.log;
 
 public enum BalanceLogAction {
     TOP_UP,

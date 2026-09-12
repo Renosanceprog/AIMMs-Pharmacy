@@ -1,4 +1,4 @@
-package model;
+package model.inventory;
 
 public enum ItemStatus {
     ACTIVE,
